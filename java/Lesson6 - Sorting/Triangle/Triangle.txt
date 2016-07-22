@@ -1,0 +1,196 @@
+PROGRAM:
+
+	class Solution {
+		private static final int MIN_SIZE_OF_SET_PRODUCTS = 3;
+		
+		public int solution(int[] A) {
+			return find(A);
+		}
+		
+		private int find(int[] array) {
+			if (isSizeLessMin(array))
+				return 0;
+			array = new SortArray().sort(array);
+			
+			for (int i=0; i<array.length-2; i++) 
+				if (isTriangle(array[i],array[i+1],array[i+2]))
+					return 1;
+			
+			return 0;
+		}
+		
+		private boolean isSizeLessMin(int[] array){
+			return array.length<MIN_SIZE_OF_SET_PRODUCTS;
+		}
+		
+		private boolean isTriangle(int firstLine, int secondLine, int thirdLine) {
+			if (isMaxValues(firstLine, secondLine, thirdLine)|| isMinValues(firstLine, secondLine, thirdLine))
+					return true;
+			return firstLine + secondLine > thirdLine;
+		}
+		
+		private boolean isMaxValues(int firstLine, int secondLine, int thirdLine){
+			return (firstLine == secondLine) && (firstLine == thirdLine) && (firstLine == Integer.MAX_VALUE);
+		}
+		
+		private boolean isMinValues(int firstLine, int secondLine, int thirdLine){
+			return (firstLine == secondLine) && (firstLine == thirdLine) && (firstLine == Integer.MIN_VALUE);
+		}
+		
+		
+		
+		private class SortArray {
+			
+			private int fullSizeOfArray;
+			private int lengthOfPart;
+			
+			public int[] sort(int[] array) {
+				setFullSizeOfArray(array.length);
+				setLengthOfPart(1);
+				
+				//while array A is splitted more than on two part
+				while (getLengthOfPart() < getFullSizeOfArray()) {
+					int startPozFirst = 0;
+					int startPozSecond = getLengthOfPart();
+
+					for (int i=0; i<getFullSizeOfArray(); i+=getLengthOfPart()) {
+						array = sortParts(startPozFirst, startPozSecond, array);
+						startPozFirst = startPozSecond + getLengthOfPart();
+						startPozSecond = startPozFirst + getLengthOfPart();
+						
+						if(startPozSecond >= getFullSizeOfArray()){
+							break;
+						}
+					}
+					
+					increaseLengthOfPart();
+				}
+				return array;
+			}
+			
+			private int[] sortParts(int startPozFirst, int startPozSecond, int[] A) {
+				int length = getLengthOfPart();
+				int[] B = new int[length*2];
+				int counter = 0;
+				int i = startPozFirst;
+				int poz = startPozSecond;
+				boolean isEndOfSecondArr = false;
+				
+				while (i<startPozSecond) {
+					//when element form second part more than from first
+					if ((A[i] > A[poz]) && (!isEndOfSecondArr)) {
+						B[counter] = A[poz];
+						if ((poz==(getFullSizeOfArray()-1))){
+							isEndOfSecondArr = true;
+						}
+						if ((poz<(getFullSizeOfArray()-1))) {
+							poz++;
+						}
+						if ((poz==(startPozSecond+length))) {
+							isEndOfSecondArr = true;
+						}
+					} else {
+						B[counter] = A[i];
+						i++;
+					}
+					counter++;
+				}
+				
+				int end = countEndPozitionOfSecondPart(startPozSecond);
+				
+				//Rest of second part is moving
+				if (counter < (length*2)) {
+					for (int j=poz; j<end; j++){
+						B[counter] = A[j];
+						counter++;
+					}
+				}
+				counter=0;
+				for(int j=startPozFirst;j<end;j++){
+					A[j] = B[counter];
+					counter++;
+				}
+				return A;
+			}
+			
+			private int countEndPozitionOfSecondPart(int startPozSecond) {
+				int endPozSecond = startPozSecond  + getLengthOfPart();
+				
+				if (endPozSecond > fullSizeOfArray) 
+					return getFullSizeOfArray();
+				
+				return  endPozSecond;
+			}
+			
+			private void increaseLengthOfPart(){
+				setLengthOfPart(getLengthOfPart()*2);
+			}
+
+			public void setFullSizeOfArray(int fullSizeOfArray) {
+				this.fullSizeOfArray = fullSizeOfArray;
+			}
+
+			public int getFullSizeOfArray() {
+				return fullSizeOfArray;
+			}
+
+			public void setLengthOfPart(int lengthOfPart) {
+				this.lengthOfPart = lengthOfPart;
+			}
+
+			public int getLengthOfPart() {
+				return lengthOfPart;
+			}
+		}
+	}
+
+
+TASK:
+
+	Determine whether a triangle can be built from a given set of edges. 
+
+	
+FULL DESCRIPTION:
+
+	A zero-indexed array A consisting of N integers is given. A triplet (P, Q, R) is triangular if 0 <= P < Q < R < N and:
+
+			A[P] + A[Q] > A[R],
+			A[Q] + A[R] > A[P],
+			A[R] + A[P] > A[Q].
+
+	For example, consider array A such that:
+		A[0] = 10 A[1] = 2 A[2] = 5 
+		A[3] = 1 A[4] = 8 A[5] = 20
+
+	Triplet (0, 2, 4) is triangular.
+
+	Write a function:
+		class Solution { public int solution(int[] A); }
+
+	that, given a zero-indexed array A consisting of N integers, returns 1 if there exists a triangular triplet for this array and returns 0 otherwise.
+
+	For example, given array A such that:
+		A[0] = 10 A[1] = 2 A[2] = 5
+		A[3] = 1 A[4] = 8 A[5] = 20
+	the function should return 1, as explained above. 
+	
+	Given array A such that:
+		A[0] = 10 A[1] = 50 A[2] = 5
+		A[3] = 1
+	the function should return 0.
+
+	Assume that:
+			N is an integer within the range [0..100,000];
+			each element of array A is an integer within the range [-2,147,483,648..2,147,483,647].
+
+	Complexity:
+
+			expected worst-case time complexity is O(N*log(N));
+			expected worst-case space complexity is O(N), beyond input storage (not counting the storage required for input arguments).
+	Elements of input arrays can be modified.
+	
+
+DESCRIPTION MY:
+
+	I used merge sorting algorithm.	
+	I split array on small parts, than merge it. I used additional array B to storage sorted values from both part.
